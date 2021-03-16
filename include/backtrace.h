@@ -23,7 +23,9 @@ typedef struct backtrace
 {
 	void *function;
 	void *address;
+	#ifdef ARM_FLAG_POKE
 	const char *name;
+	#endif
 } backtrace_t;
 
 typedef struct unwind_control_block
@@ -45,7 +47,10 @@ extern const unwind_index_t __exidx_start[];
 extern const unwind_index_t __exidx_end[];
 
 int _backtrace_unwind(backtrace_t *buffer, int size, backtrace_frame_t *frame);
+
+#ifdef ARM_FLAG_POKE
 const char *backtrace_function_name(uint32_t pc);
+#endif
 
 static inline int __attribute__((always_inline)) backtrace_unwind_from_frame(backtrace_t *buffer, int size, backtrace_frame_t frame)
 {
