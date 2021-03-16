@@ -47,6 +47,12 @@ extern const unwind_index_t __exidx_end[];
 int _backtrace_unwind(backtrace_t *buffer, int size, backtrace_frame_t *frame);
 const char *backtrace_function_name(uint32_t pc);
 
+static inline int __attribute__((always_inline)) backtrace_unwind_from_frame(backtrace_t *buffer, int size, backtrace_frame_t frame)
+{
+	/* Let it rip */
+	return _backtrace_unwind(buffer, size, &frame);
+}
+
 static inline int __attribute__((always_inline)) backtrace_unwind(backtrace_t *buffer, int size)
 {
 	/* Get the current pc */
