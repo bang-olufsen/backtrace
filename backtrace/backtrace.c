@@ -10,7 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef UNWIND_ARM_H
+// Already done in "unwind.c" from libgcc
+#ifndef __GNUC__
 void __aeabi_unwind_cpp_pr0(void) {};
 void __aeabi_unwind_cpp_pr1(void) {};
 void __aeabi_unwind_cpp_pr2(void) {};
