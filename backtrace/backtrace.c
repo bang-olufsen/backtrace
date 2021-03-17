@@ -10,22 +10,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* This prevents the linking of libgcc unwinder code */
-void __aeabi_unwind_cpp_pr0(void);
-void __aeabi_unwind_cpp_pr1(void);
-void __aeabi_unwind_cpp_pr2(void);
-
-void __aeabi_unwind_cpp_pr0(void)
-{
-};
-
-void __aeabi_unwind_cpp_pr1(void)
-{
-};
-
-void __aeabi_unwind_cpp_pr2(void)
-{
-};
+// Already done in "unwind.c" from libgcc
+#ifndef __GNUC__
+void __aeabi_unwind_cpp_pr0(void) {};
+void __aeabi_unwind_cpp_pr1(void) {};
+void __aeabi_unwind_cpp_pr2(void) {};
+#endif
 
 static inline __attribute__((always_inline)) uint32_t prel31_to_addr(const uint32_t *prel31)
 {
@@ -47,7 +37,7 @@ static const struct unwind_index *unwind_search_index(const unwind_index_t *star
 	}
 	return start;
 }
-
+#ifdef ARM_FLAG_POKE
 static const char *unwind_get_function_name(void *address)
 {
 	uint32_t flag_word = *(uint32_t *)(address - 4);
@@ -56,6 +46,7 @@ static const char *unwind_get_function_name(void *address)
 	}
 	return "unknown";
 }
+#endif
 
 static int unwind_get_next_byte(unwind_control_block_t *ucb)
 {
@@ -158,7 +149,7 @@ static int unwind_execute_instruction(unwind_control_block_t *ucb)
 			/* pop r4-r[4+nnn] or pop r4-r[4+nnn], r14*/
 			vsp = (uint32_t *)ucb->vrs[13];
 
-			for (reg = 4; reg <= (instruction & 0x07) + 4; ++reg)
+			for (reg = 4; reg <= (uint32_t)(instruction & 0x07) + 4; ++reg)
 				ucb->vrs[reg] = *vsp++;
 
 			if (instruction & 0x80)
@@ -347,13 +338,17 @@ int _backtrace_unwind(backtrace_t *buffer, int size, backtrace_frame_t *frame)
 	do {
 		if (frame->pc == 0) {
 			/* Reached __exidx_end. */
+#ifdef ARM_FLAG_POKE
 			buffer[count++].name = "<reached end of unwind table>";
+#endif
 			break;
 		}
 
 		if (frame->pc == 0x00000001) {
 			/* Reached .cantunwind instruction. */
+#ifdef ARM_FLAG_POKE
 			buffer[count++].name = "<reached .cantunwind>";
+#endif
 			break;
 		}
 
@@ -366,7 +361,9 @@ int _backtrace_unwind(backtrace_t *buffer, int size, backtrace_frame_t *frame)
 		/* Generate the backtrace information */
 		buffer[count].address = (void *)frame->pc;
 		buffer[count].function = (void *)prel31_to_addr(&index->addr_offset);
+#ifdef ARM_FLAG_POKE
 		buffer[count].name = unwind_get_function_name(buffer[count].function);
+#endif
 
 		/* Next backtrace frame */
 		++count;
@@ -377,6 +374,7 @@ int _backtrace_unwind(backtrace_t *buffer, int size, backtrace_frame_t *frame)
 	return count;
 }
 
+#ifdef ARM_FLAG_POKE
 const char *backtrace_function_name(uint32_t pc)
 {
 	const unwind_index_t *index = unwind_search_index(__exidx_start, __exidx_end, pc);
@@ -385,3 +383,4 @@ const char *backtrace_function_name(uint32_t pc)
 
 	return unwind_get_function_name((void *)prel31_to_addr(&index->addr_offset));
 }
+#endif
