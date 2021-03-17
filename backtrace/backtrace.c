@@ -338,17 +338,17 @@ int _backtrace_unwind(backtrace_t *buffer, int size, backtrace_frame_t *frame)
 	do {
 		if (frame->pc == 0) {
 			/* Reached __exidx_end. */
-			#ifdef ARM_FLAG_POKE
+#ifdef ARM_FLAG_POKE
 			buffer[count++].name = "<reached end of unwind table>";
-			#endif
+#endif
 			break;
 		}
 
 		if (frame->pc == 0x00000001) {
 			/* Reached .cantunwind instruction. */
-			#ifdef ARM_FLAG_POKE
+#ifdef ARM_FLAG_POKE
 			buffer[count++].name = "<reached .cantunwind>";
-			#endif
+#endif
 			break;
 		}
 
@@ -361,9 +361,9 @@ int _backtrace_unwind(backtrace_t *buffer, int size, backtrace_frame_t *frame)
 		/* Generate the backtrace information */
 		buffer[count].address = (void *)frame->pc;
 		buffer[count].function = (void *)prel31_to_addr(&index->addr_offset);
-		#ifdef ARM_FLAG_POKE
+#ifdef ARM_FLAG_POKE
 		buffer[count].name = unwind_get_function_name(buffer[count].function);
-		#endif
+#endif
 
 		/* Next backtrace frame */
 		++count;

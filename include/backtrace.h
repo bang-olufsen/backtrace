@@ -23,9 +23,9 @@ typedef struct backtrace
 {
 	void *function;
 	void *address;
-	#ifdef ARM_FLAG_POKE
+#ifdef ARM_FLAG_POKE
 	const char *name;
-	#endif
+#endif
 } backtrace_t;
 
 typedef struct unwind_control_block
